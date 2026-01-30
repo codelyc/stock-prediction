@@ -20,15 +20,19 @@ A PyTorch-based stock price prediction project covering the full workflow from d
 
 ## Quick Start
 ```bash
-conda activate stock_prediction
-pip install -r requirements.txt
-python scripts/train.py --mode train --model ptft_vssm --pkl 1 --epoch 2
-python scripts/predict.py --model ptft_vssm --test_code 000001
+# Install dependencies with uv
+uv sync
+
+# Train a model
+uv run python scripts/train.py --mode train --model ptft_vssm --pkl 1 --epoch 2
+
+# Make predictions
+uv run python scripts/predict.py --model ptft_vssm --test_code 000001
 ```
 For first-time use, run:
 ```bash
-python scripts/getdata.py --api akshare --code 000001.SZ
-python scripts/data_preprocess.py --pklname train.pkl
+uv run python scripts/getdata.py --api akshare --code 000001.SZ
+uv run python scripts/data_preprocess.py --pklname train.pkl
 ```
 
 ## Directory Structure
@@ -61,11 +65,20 @@ project-root/
 
 ## Common Commands
 ```bash
-python scripts/getdata.py --api akshare --code 000001.SZ
-python scripts/data_preprocess.py --pklname train.pkl
-python scripts/train.py --mode train --model transformer --epoch 2
-python scripts/predict.py --model transformer --test_code 000001 --predict_days 3
-pytest -q
+# Fetch market data
+uv run python scripts/getdata.py --api akshare --code 000001.SZ
+
+# Preprocess data
+uv run python scripts/data_preprocess.py --pklname train.pkl
+
+# Train a model
+uv run python scripts/train.py --mode train --model transformer --epoch 2
+
+# Make predictions
+uv run python scripts/predict.py --model transformer --test_code 000001 --predict_days 3
+
+# Run tests
+uv run pytest -q
 ```
 
 ## Testing & Quality
@@ -156,19 +169,19 @@ For more background and future plans, see docs/model_strategy.md and docs/system
 ## 常用命令
 ```bash
 # 抓取行情
-python scripts/getdata.py --api akshare --code 000001.SZ
+uv run python scripts/getdata.py --api akshare --code 000001.SZ
 
 # 数据预处理
-python scripts/data_preprocess.py --pklname train.pkl
+uv run python scripts/data_preprocess.py --pklname train.pkl
 
 # 训练示例
-python scripts/train.py --mode train --model transformer --epoch 2
+uv run python scripts/train.py --mode train --model transformer --epoch 2
 
 # 推理示例
-python scripts/predict.py --model transformer --test_code 000001 --predict_days 3
+uv run python scripts/predict.py --model transformer --test_code 000001 --predict_days 3
 
 # 运行测试
-pytest -q
+uv run pytest -q
 
 # 查看训练指标（训练后自动生成）
 type output\metrics_*.json
