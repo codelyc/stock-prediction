@@ -416,7 +416,10 @@ class Stock_Data(Dataset):
 
     def generate_value_label_tensors(self, label_num):
         if self.mode in [0, 1]:
-            sequence_count = self.data.shape[0] - SEQ_LEN
+            if self.predict_days > 0:
+                sequence_count = self.data.shape[0] - self.predict_days - SEQ_LEN
+            else:
+                sequence_count = self.data.shape[0] - SEQ_LEN
             if sequence_count <= 0:
                 return None
             value = torch.rand(sequence_count, SEQ_LEN, self.data.shape[1])
@@ -427,7 +430,10 @@ class Stock_Data(Dataset):
             symbol_values: list[int] = []
 
             for i in range(sequence_count):
-                window = self.data[i + 1 : i + SEQ_LEN + 1, :].reshape(SEQ_LEN, self.data.shape[1])
+                if self.predict_days > 0:
+                    window = self.data[i + self.predict_days : i + self.predict_days + SEQ_LEN, :].reshape(SEQ_LEN, self.data.shape[1])
+                else:
+                    window = self.data[i + 1 : i + SEQ_LEN + 1, :].reshape(SEQ_LEN, self.data.shape[1])
                 flipped = np.flip(window, 0).astype(np.float32, copy=True)
                 value[i, :, :] = torch.from_numpy(flipped)
                 targets = []
@@ -621,15 +627,22 @@ class stock_queue_dataset(Dataset):
         return max(value, 0)
 
     def generate_value_label_tensors(self, data, label_num, symbol_series=None):
-        value = torch.rand(data.shape[0] - SEQ_LEN, SEQ_LEN, data.shape[1])
         if self.predict_days > 0:
-            label = torch.rand(data.shape[0] - SEQ_LEN, self.predict_days, label_num)
+            sequence_count = data.shape[0] - self.predict_days - SEQ_LEN
+        else:
+            sequence_count = data.shape[0] - SEQ_LEN
+        value = torch.rand(sequence_count, SEQ_LEN, data.shape[1])
+        if self.predict_days > 0:
+            label = torch.rand(sequence_count, self.predict_days, label_num)
         elif self.predict_days <= 0:
-            label = torch.rand(data.shape[0] - SEQ_LEN, label_num)
+            label = torch.rand(sequence_count, label_num)
         symbol_values: list[int] = []
 
-        for i in range(data.shape[0] - SEQ_LEN):
-            _value_tmp = np.copy(np.flip(data[i + 1:i + SEQ_LEN + 1, :].reshape(SEQ_LEN, data.shape[1]), 0))
+        for i in range(sequence_count):
+            if self.predict_days > 0:
+                _value_tmp = np.copy(np.flip(data[i + self.predict_days : i + self.predict_days + SEQ_LEN, :].reshape(SEQ_LEN, data.shape[1]), 0))
+            else:
+                _value_tmp = np.copy(np.flip(data[i + 1 : i + SEQ_LEN + 1, :].reshape(SEQ_LEN, data.shape[1]), 0))
             value[i, :, :] = torch.from_numpy(_value_tmp)
 
             _tmp = []
