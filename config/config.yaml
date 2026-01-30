@@ -1,0 +1,43 @@
+training:
+  scheduler_type: none   # none|step|plateau
+  scheduler_step_size: 10
+  scheduler_gamma: 0.1
+  early_stopping_patience: 5
+  early_stopping_min_delta: 0.0001
+  seed: 42
+# config.yaml 示例
+train_pkl_path: ./pkl_handle/train.pkl
+png_path: ./png
+model_path: ./models
+batch_size: 32
+epoch: 2
+api: akshare
+features:
+  target_mode: log_return
+  return_kind: log
+  return_lag: 1
+  difference_order: 1
+  price_columns: ["close", "open"]
+  difference_columns: ["close", "pct_change"]
+  volatility_columns: ["pct_change", "change", "vol"]
+  sliding_windows:
+    - size: 5
+      stride: 1
+      agg: mean
+    - size: 20
+      stride: 5
+      agg: std
+  external_sources:
+    - name: macro
+      path: ./config/external/macro_sample.csv
+      join_on: trade_date
+      forward_fill: true
+      weight: 1.0
+      domain: macro
+  multi_stock: true
+  window_ensemble_ops: ["mean", "std"]
+  align_holiday: true
+  enable_direction_label: true
+  enable_symbol_normalization: false  # 禁用符号级归一化，避免重复标准化
+  use_symbol_embedding: true
+  symbol_embedding_dim: 16
