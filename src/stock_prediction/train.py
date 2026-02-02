@@ -78,7 +78,6 @@ parser.add_argument('--pkl_queue', default=1, type=int, help="use pkl queue inst
 parser.add_argument('--test_code', default="", type=str, help="test code")
 parser.add_argument('--test_gpu', default=1, type=int, help="test method use gpu or not")
 parser.add_argument('--predict_days', default=0, type=int, help="number of the predict days,Positive numbers use interval prediction algorithm, 0 and negative numbers use date prediction algorithm")
-parser.add_argument('--api', default="akshare", type=str, help="api-interface, tushare, akshare or yfinance")
 parser.add_argument('--trend', default=0, type=int, help="predict the trend of stock, not the price")
 parser.add_argument('--epoch', default=5, type=int, help="training epochs")
 parser.add_argument('--plot_days', default=30, type=int, help="history days to display in test/predict plots")
@@ -104,7 +103,6 @@ class DefaultArgs:
     test_code = ""
     test_gpu = 1
     predict_days = 0
-    api = "akshare"
     trend = 0
     epoch = 5
     plot_days = 30
@@ -534,8 +532,6 @@ def predict(test_codes):
         pbar = tqdm(total=predict_days, leave=False, ncols=TQDM_NCOLS)
         while predict_days > 0:
             lastdate = pd.to_datetime(predict_data["Date"].iloc[0])
-            if args.api == "tushare":
-                lastclose = float(predict_data["Close"].iloc[0])
             feature_frame = predict_data.drop(columns=['ts_code', 'Date']).copy()
             feature_frame = feature_frame.fillna(feature_frame.median(numeric_only=True))
             test_loss, predict_list, _ = test(feature_frame, dataloader_mode=2, norm_symbol=symbol_code)
@@ -557,46 +553,28 @@ def predict(test_codes):
                 tmp_data.extend(rows[0])
             _splice_data = copy.deepcopy(spliced_data).drop(columns=['ts_code', 'Date'])
             df_mean = _splice_data.mean().tolist()
-            if args.api == "tushare":
-                for index in range(len(tmp_data) - 2, len(df_mean) - 1):
-                    tmp_data.append(df_mean[index])
-                tmp_data.append(lastclose)
-            else:
-                for index in range(len(tmp_data) - 2, len(df_mean)):
-                    tmp_data.append(-0.0)
+            for index in range(len(tmp_data) - 2, len(df_mean)):
+                tmp_data.append(-0.0)
             tmp_df = pd.DataFrame([tmp_data], columns=spliced_data.columns)
             predicted_rows.append(tmp_df.iloc[0].to_dict())
             predict_data = pd.concat([tmp_df, spliced_data], axis=0, ignore_index=True)
             spliced_data = normalize_date_column(copy.deepcopy(predict_data))
             predict_data['Date'] = pd.to_datetime(predict_data['Date'])
 
-            if args.api in ("akshare", "yfinance"):
-                predict_data[['Open', 'High', 'Low', 'Close', 'change', 'pct_change', 'Volume', 'amount', 'amplitude', 'exchange_rate']] = (
-                    predict_data[['Open', 'High', 'Low', 'Close', 'change', 'pct_change', 'Volume', 'amount', 'amplitude', 'exchange_rate']].astype('float64')
-                )
-                predict_data['Date'] = predict_data['Date'].dt.strftime('%Y%m%d')
-                predict_data.rename(
-                    columns={
-                        'Date': 'trade_date', 'Open': 'open',
-                        'High': 'high', 'Low': 'low',
-                        'Close': 'close', 'Volume': 'vol'},
-                    inplace=True)
-                predict_data = predict_data.loc[:, [
-                    "ts_code", "trade_date", "open", "high", "low", "close",
-                    "change", "pct_change", "vol", "amount", "amplitude", "exchange_rate"
-                ]]
-            elif args.api == "tushare":
-                predict_data['Date'] = predict_data['Date'].dt.strftime('%Y%m%d')
-                predict_data = predict_data.loc[:, [
-                    "ts_code", "Date", "Open", "Close", "High", "Low",
-                    "Volume", "amount", "amplitude", "pct_change", "change", "exchange_rate"
-                ]]
-                predict_data.rename(
-                    columns={
-                        'Date': 'trade_date', 'Open': 'open',
-                        'High': 'high', 'Low': 'low',
-                        'Close': 'close', 'Volume': 'vol'},
-                    inplace=True)
+            predict_data[['Open', 'High', 'Low', 'Close', 'change', 'pct_change', 'Volume', 'amount', 'amplitude', 'exchange_rate']] = (
+                predict_data[['Open', 'High', 'Low', 'Close', 'change', 'pct_change', 'Volume', 'amount', 'amplitude', 'exchange_rate']].astype('float64')
+            )
+            predict_data['Date'] = predict_data['Date'].dt.strftime('%Y%m%d')
+            predict_data.rename(
+                columns={
+                    'Date': 'trade_date', 'Open': 'open',
+                    'High': 'high', 'Low': 'low',
+                    'Close': 'close', 'Volume': 'vol'},
+                inplace=True)
+            predict_data = predict_data.loc[:, [
+                "ts_code", "trade_date", "open", "high", "low", "close",
+                "change", "pct_change", "vol", "amount", "amplitude", "exchange_rate"
+            ]]
 
             predict_data.to_csv(test_path, sep=',', index=False, header=True)
             load_data([test_codes[0]], None, test_path, data_queue=data_queue)
@@ -1511,8 +1489,6 @@ def main():
                     if _data.empty:
                         continue
                     _ts_code = str(_data['ts_code'].iloc[0]).zfill(6)
-                    if args.api == "akshare":
-                        _ts_code = _ts_code.zfill(6)
                     if _ts_code in train_codes:
                         data_queue.put(_data)
                         total_length += _data.shape[0] - SEQ_LEN
@@ -1750,4 +1726,3 @@ def create_predictor(model_type="lstm", device_type="cpu"):
 
 if __name__ == "__main__":
     main()
-

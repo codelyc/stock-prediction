@@ -63,21 +63,10 @@ df_queue=queue.Queue()
 NoneDataFrame = pd.DataFrame(columns=["ts_code"])
 NoneDataFrame["ts_code"] = ["None"]
 
-## tushare data list
-# name_list = ["open", "high", "low", "close", "change", "pct_chg", "vol", "amount"]
-# use_list = [1,1,1,1,0,0,0,0]
-# show_list = [1,1,1,1,0,0,0,0]
-
-
-## akshare data list
+## akshare data list (唯一数据源)
 name_list = ["open","close","high","low","vol","amount","amplitude","pct_change","change","exchange_rate"]
 use_list = [1,1,1,1,0,0,0,0,0,0]
 show_list = [1,1,1,1,0,0,0,0,0,0]
-
-## yfinance data list
-# name_list = ["open","close","high","low","vol"]
-# use_list = [1,1,1,1,0]
-# show_list = [1,1,1,1,0]
 
 OUTPUT_DIMENSION = sum(use_list)
 # INPUT_DIMENSION = 20+OUTPUT_DIMENSION

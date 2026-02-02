@@ -31,7 +31,7 @@ flowchart LR
     end
 
     Models --> Torch[PyTorch]
-    G --> ExternalAPI[(tushare / akshare / yfinance)]
+    G --> ExternalAPI[(akshare)]
 ```
 
 ### 1.1 模块职责

@@ -5,7 +5,7 @@ This project is based on a fork from [KittenCN/stock_prediction](https://github.
 A PyTorch-based stock price prediction project covering the full workflow from data collection, preprocessing, model training, to inference. The project focuses on multi-scale hybrid models (TemporalHybridNet) and PTFT + Variational SSM combinations.
 
 ## Features
-- **Market Data Collection**: Supports tushare, akshare, and yfinance as data sources.
+- **Market Data Collection**: Uses akshare as the data source.
 - **Data Preprocessing**: Aggregates daily CSVs into `pkl_handle/train.pkl`, supports repeated loading.
 - **Feature Engineering**: Automatically generates log returns, differences, macro/industry/sentiment exogenous variables, supports per-symbol normalization and stock embedding.
 - **Model Training**: Unified entry, supports LSTM, Transformer, TemporalHybridNet, PTFT_VSSM, Diffusion, Graph, etc., with built-in trainer and early stopping.
@@ -31,7 +31,7 @@ uv run python scripts/predict.py --model ptft_vssm --test_code 000001
 ```
 For first-time use, run:
 ```bash
-uv run python scripts/getdata.py --api akshare --code 000001.SZ
+uv run python scripts/getdata.py --code 000001.SZ
 uv run python scripts/data_preprocess.py --pklname train.pkl
 ```
 
@@ -66,7 +66,7 @@ project-root/
 ## Common Commands
 ```bash
 # Fetch market data
-uv run python scripts/getdata.py --api akshare --code 000001.SZ
+uv run python scripts/getdata.py --code 000001.SZ
 
 # Preprocess data
 uv run python scripts/data_preprocess.py --pklname train.pkl
@@ -169,7 +169,7 @@ For more background and future plans, see docs/model_strategy.md and docs/system
 ## 常用命令
 ```bash
 # 抓取行情
-uv run python scripts/getdata.py --api akshare --code 000001.SZ
+uv run python scripts/getdata.py --code 000001.SZ
 
 # 数据预处理
 uv run python scripts/data_preprocess.py --pklname train.pkl

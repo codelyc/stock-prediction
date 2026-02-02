@@ -113,7 +113,6 @@ class AppConfig(BaseModel):
     model_path: str = Field(..., description="Directory for persisted model checkpoints")
     batch_size: int = Field(32, description="Mini-batch size")
     epoch: int = Field(2, description="Number of training epochs")
-    api: str = Field("akshare", description="Upstream data API source")
     # Training related
     scheduler_type: str = Field("none", description="LR scheduler type: none|step|plateau")
     scheduler_step_size: int = Field(10, description="StepLR step_size")
@@ -152,7 +151,6 @@ class AppConfig(BaseModel):
             "model_path": os.getenv("MODEL_PATH"),
             "batch_size": os.getenv("BATCH_SIZE"),
             "epoch": os.getenv("EPOCH"),
-            "api": os.getenv("API"),
             "scheduler_type": os.getenv("SCHEDULER_TYPE"),
             "scheduler_step_size": os.getenv("SCHEDULER_STEP_SIZE"),
             "scheduler_gamma": os.getenv("SCHEDULER_GAMMA"),

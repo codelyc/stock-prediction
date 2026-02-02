@@ -175,7 +175,6 @@ parser.add_argument('--pkl', default=1, type=int, help="whether to use preproces
 parser.add_argument('--pkl_queue', default=1, type=int, help="whether to use pkl queue data")
 parser.add_argument('--predict_days', default=0, type=int, help=">0 for interval prediction, <=0 for day-by-day prediction")
 parser.add_argument('--plot_days', default=30, type=int, help="history days to display in test/predict plots; 0 uses full history")
-parser.add_argument('--api', default="akshare", type=str, help="data source: tushare / akshare / yfinance")
 parser.add_argument('--trend', default=0, type=int, help="set 1 to predict trend instead of price")
 parser.add_argument('--test_gpu', default=1, type=int, help="set 1 to run inference on GPU")
 
@@ -187,7 +186,6 @@ class DefaultArgs:
     pkl_queue = 1
     predict_days = 0
     plot_days = 30
-    api = "akshare"
     trend = 0
     test_gpu = 1
 
@@ -780,5 +778,3 @@ def create_predictor(model_type='lstm', device_type='cpu'):
 
 if __name__ == '__main__':
     main()
-
-

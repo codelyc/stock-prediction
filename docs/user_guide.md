@@ -3,7 +3,7 @@
 ## 1. 命令行速查
 | 命令 | 作用 | 备注 |
 | ---- | ---- | -------- |
-| `python scripts/getdata.py --api akshare --code 000001.SZ` | 抓取指定股票日线数据写入 `stock_daily/` | 运行前请激活 `conda activate stock_prediction` 并确保安装数据源依赖 |
+| `python scripts/getdata.py --code 000001.SZ` | 抓取指定股票日线数据写入 `stock_daily/` | 运行前请激活 `conda activate stock_prediction` 并确保安装 akshare |
 | `python scripts/data_preprocess.py --pklname train.pkl` | 将 `stock_daily/` 下的 CSV 聚合为 `pkl_handle/train.pkl` | 依赖 `stock_prediction.init` 中的共享队列与 `dill` |
 | `python scripts/train.py --mode train --model ptft_vssm --predict_days 3` | 训练 PTFT + VSSM 双轨模型 | 其他模型：`lstm`、`attention_lstm`、`bilstm`、`tcn`、`multibranch`、`transformer`、`cnnlstm`、`hybrid` |
 | `python scripts/predict.py --model ptft_vssm --test_code 000001` | 推理指定股票的未来走势 | 支持设置 `--predict_days` 输出多日区间 |
@@ -45,13 +45,13 @@ un_all_models.bat
 ### 4.1 环境说明
 - 推荐环境：`conda activate stock_prediction`，Python ≥ 3.10。
 - 依赖安装：`pip install -r requirements.txt`；如需 CUDA，请额外安装匹配版本的 `torch`/`torchvision`。
-- 外部数据源：按需安装 `tushare`、`akshare`、`yfinance`，并准备 API Token。
+- 外部数据源：仅需安装 `akshare`。
 
 ### 4.2 常用操作
 | 场景 | 命令 | 说明 |
 | ---- | ---- | ---- |
 | 初始化环境 | `conda activate stock_prediction`<br>`pip install -r requirements.txt` | 首次或依赖更新时执行 |
-| 拉取行情 | `python scripts/getdata.py --api akshare --code 000001.SZ` | 结果写入 `stock_daily/` |
+| 拉取行情 | `python scripts/getdata.py --code 000001.SZ` | 结果写入 `stock_daily/` |
 | 聚合数据 | `python scripts/data_preprocess.py --pklname train.pkl` | 生成 `pkl_handle/train.pkl` |
 | 训练/测试 | `python scripts/train.py --mode train --model transformer` | CLI 支持所有模型模式 |
 | 推理 | `python scripts/predict.py --model transformer --test_code 000001` | 根据需要设置 `--predict_days` |
