@@ -24,7 +24,6 @@ class Config:
         self.daily_path = self.root_path / "stock_daily"
         self.handle_path = self.root_path / "stock_handle"
         self.pkl_path = self.root_path / "pkl_handle"
-        self.bert_data_path = self.root_path / "bert_data"
 
         # Output locations
         self.png_path = self.root_path / "png"
@@ -52,16 +51,12 @@ class Config:
             self.daily_path,
             self.handle_path,
             self.pkl_path,
-            self.bert_data_path,
             self.png_path,
             self.output_path,
             self.models_path,
             self.png_path / "train_loss",
             self.png_path / "predict",
             self.png_path / "test",
-            self.bert_data_path / "model",
-            self.bert_data_path / "data",
-            self.data_path / "log",
         ]
 
         for directory in directories:
@@ -91,7 +86,6 @@ png_path = str(config.png_path)
 daily_path = str(config.daily_path)
 handle_path = str(config.handle_path)
 pkl_path = str(config.pkl_path)
-bert_data_path = str(config.bert_data_path)
 data_path = str(config.data_path)
 lstm_path = str(config.lstm_path)
 transformer_path = str(config.transformer_path)

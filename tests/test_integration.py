@@ -48,7 +48,6 @@ def test_config_paths_accessible():
     
     # 测试关键目录存在
     assert config.png_path.exists()
-    assert config.bert_data_path.exists()
 
 
 def test_models_importable():

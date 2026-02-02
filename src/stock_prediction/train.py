@@ -482,27 +482,25 @@ def test(dataset, testmodel=None, dataloader_mode=0, norm_symbol=None):
 def predict(test_codes):
     global model_mode
     print("test_code=", test_codes)
-    if PKL == 0:
-        load_data(test_codes,data_queue=data_queue)
+    data = NoneDataFrame
+    if PKL is False:
+        load_data(test_codes, data_queue=data_queue)
         try:
             data = data_queue.get(timeout=30)
         except queue.Empty:
             print("Error: data_queue is empty")
             return
     else:
-        _data = NoneDataFrame
         with open(train_pkl_path, 'rb') as f:
-            data_queue = ensure_queue_compatibility(dill.load(f))
-        while data_queue.empty() == False:
+            pkl_data_queue = ensure_queue_compatibility(dill.load(f))
+        while pkl_data_queue.empty() is False:
             try:
-                item = data_queue.get(timeout=30)
+                item = pkl_data_queue.get(timeout=30)
                 if str(item['ts_code'].iloc[0]).zfill(6) in test_codes:
-                    _data = item
+                    data = copy.deepcopy(item)
                     break
             except queue.Empty:
                 break
-    data_queue = queue.Queue()
-    data = copy.deepcopy(_data)
 
     data = normalize_date_column(data)
 
@@ -778,7 +776,7 @@ def contrast_lines(test_codes):
     global model_mode
     data = NoneDataFrame
     if PKL is False:
-        load_data(test_codes,data_queue=data_queue)
+        load_data(test_codes, data_queue=data_queue)
         try:
             data = data_queue.get(timeout=30)
         except queue.Empty:
@@ -786,10 +784,10 @@ def contrast_lines(test_codes):
             return
     else:
         with open(train_pkl_path, 'rb') as f:
-            data_queue = ensure_queue_compatibility(dill.load(f))
-        while data_queue.empty() == False:
+            pkl_data_queue = ensure_queue_compatibility(dill.load(f))
+        while pkl_data_queue.empty() is False:
             try:
-                item = data_queue.get(timeout=30)
+                item = pkl_data_queue.get(timeout=30)
             except queue.Empty:
                 break
             if str(item['ts_code'].iloc[0]).zfill(6) in test_codes:
@@ -798,7 +796,6 @@ def contrast_lines(test_codes):
         if data is NoneDataFrame:
             print("Error: data is None")
             return
-        data_queue = queue.Queue()
 
     data = normalize_date_column(data)
     
@@ -1025,7 +1022,8 @@ def main():
     global args
     global last_loss,test_model,model,total_test_length,lr_scheduler,drop_last
     global criterion, optimizer, model_mode, save_path, device, last_save_time
-    global lo_list
+    global lo_list, train_pkl_path
+    global PKL
     
     # Parse command-line arguments only when executed as a script
     args = parser.parse_args()
@@ -1050,6 +1048,23 @@ def main():
     if mode == "train":
         symbol_norm_map.clear()
     PKL = False if args.pkl <= 0 else True
+
+    pkl_candidate = Path(train_pkl_path)
+    if not pkl_candidate.is_absolute():
+        pkl_candidate = root_dir / pkl_candidate
+    train_pkl_path = str(pkl_candidate)
+    if PKL and mode in {"train", "test", "predict"} and not pkl_candidate.exists():
+        daily_count = len(list(Path(daily_path).glob("*.csv")))
+        print(f"[WARN] PKL file not found: {pkl_candidate}")
+        if daily_count > 0:
+            PKL = False
+            print(f"[WARN] Found {daily_count} daily CSV files under {daily_path}, fallback to CSV mode (--pkl 0).")
+        else:
+            print("[ERROR] No input data found.")
+            print("Please run:")
+            print("  python scripts/getdata.py --code 000001")
+            print("  python scripts/data_preprocess.py --pklname train.pkl")
+            return
     if args.cpu == 1:
         device = torch.device("cpu")
 

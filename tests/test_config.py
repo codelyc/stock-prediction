@@ -17,7 +17,6 @@ def test_config_directories_created():
     assert test_config.png_path.exists()
     assert (test_config.png_path / "train_loss").exists()
     assert (test_config.png_path / "predict").exists()
-    assert test_config.bert_data_path.exists()
 
 
 def test_model_path_generation():

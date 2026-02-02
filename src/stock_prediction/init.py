@@ -14,7 +14,6 @@ import dill
 from torch.amp import autocast, GradScaler
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
-from transformers import BertModel,BertPreTrainedModel,BertForSequenceClassification,BertTokenizer,AutoTokenizer,AutoModelForSequenceClassification
 
 TRAIN_WEIGHT=0.9
 SEQ_LEN=5  # 5
@@ -37,8 +36,6 @@ BUFFER_SIZE = 10
 D_MODEL = 512
 NHEAD = 8
 WARMUP_STEPS = 60000
-# checkpoint = "bert-base-uncased"
-checkpoint = 'bert-base-chinese'
 symbol = 'Generic.Data'
 # symbol = '000001.SZ'
 
@@ -83,7 +80,7 @@ if device.type == "cuda":
 # Import configuration module
 from .config import (
     config, root_path, train_path, test_path, train_pkl_path, png_path,
-    daily_path, handle_path, pkl_path, bert_data_path, data_path,
+    daily_path, handle_path, pkl_path, data_path,
     lstm_path, transformer_path, cnnlstm_path
 )
 

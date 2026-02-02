@@ -37,7 +37,7 @@ class SlidingWindowConfig(BaseModel):
 
 
 class ExternalFeatureConfig(BaseModel):
-    """Specification for external (macro/industry/sentiment) feature sources."""
+    """Specification for external (macro/industry/other) feature sources."""
 
     name: str = Field(..., description="Display name of the external signal")
     path: str = Field(..., description="CSV file path containing external features")
@@ -45,7 +45,7 @@ class ExternalFeatureConfig(BaseModel):
     ts_code_column: Optional[str] = Field(None, description="Column for stock identifier, optional")
     forward_fill: bool = Field(True, description="Forward fill missing external values")
     weight: float = Field(1.0, description="Weight applied when combining overlapping sources")
-    domain: Optional[str] = Field(None, description="Domain tag: macro/industry/sentiment/other")
+    domain: Optional[str] = Field(None, description="Domain tag: macro/industry/other")
 
 
 class FeatureSettings(BaseModel):
@@ -58,7 +58,7 @@ class FeatureSettings(BaseModel):
     price_columns: List[str] = Field(default_factory=lambda: ["close"], description="Columns to treat as prices")
     difference_columns: List[str] = Field(default_factory=lambda: ["close"], description="Columns to difference")
     volatility_columns: List[str] = Field(default_factory=lambda: ["pct_change", "change", "vol"], description="Columns summarised in sliding windows")
-    external_sources: List[ExternalFeatureConfig] = Field(default_factory=list, description="External (macro/industry/sentiment) features")
+    external_sources: List[ExternalFeatureConfig] = Field(default_factory=list, description="External (macro/industry/other) features")
     sliding_windows: List[SlidingWindowConfig] = Field(default_factory=list, description="Rolling window aggregations")
     multi_stock: bool = Field(True, description="Allow multi-stock joint training")
     window_ensemble_ops: List[str] = Field(default_factory=lambda: ["mean", "std"], description="Ops applied when stacking sliding windows")

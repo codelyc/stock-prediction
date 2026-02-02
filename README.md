@@ -7,7 +7,7 @@ A PyTorch-based stock price prediction project covering the full workflow from d
 ## Features
 - **Market Data Collection**: Uses akshare as the data source.
 - **Data Preprocessing**: Aggregates daily CSVs into `pkl_handle/train.pkl`, supports repeated loading.
-- **Feature Engineering**: Automatically generates log returns, differences, macro/industry/sentiment exogenous variables, supports per-symbol normalization and stock embedding.
+- **Feature Engineering**: Automatically generates log returns, differences, macro/industry exogenous variables, supports per-symbol normalization and stock embedding.
 - **Model Training**: Unified entry, supports LSTM, Transformer, TemporalHybridNet, PTFT_VSSM, Diffusion, Graph, etc., with built-in trainer and early stopping.
 - **Inference**: Consistent feature processing and embedding as in training, outputs prediction charts and metrics.
 - **Evaluation Metrics**: Automatically collects RMSE, MAPE, quantile coverage, VaR, CVaR, etc., and saves results to `output/metrics_*.json`.
@@ -162,7 +162,7 @@ For more background and future plans, see docs/model_strategy.md and docs/system
 
   - `target_mode=log_return`、`return_kind=log`：默认对收盘价生成对数收益率标签。
   - `difference_columns`、`volatility_columns`：控制差分与滑动窗口统计字段。
-  - `external_sources`：白名单式引入宏观/行业/舆情 CSV，按 `trade_date` 对齐并支持前向填充。
+  - `external_sources`：白名单式引入宏观/行业外生 CSV，按 `trade_date` 对齐并支持前向填充。
   - `multi_stock: true`：默认在多股票场景聚合训练样本，自动生成方向标签。
 - 若自定义外生特征，保持日期列为八位字符串（如 `20241203`），并放置在 `config/external/` 下即可。
 

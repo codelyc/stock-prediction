@@ -9,8 +9,5 @@ seaborn
 mplfinance
 prefetch_generator
 dill
-transformers
-datasets
 akshare
-
 

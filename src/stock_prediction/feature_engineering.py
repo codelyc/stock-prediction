@@ -3,7 +3,7 @@ Feature engineering utilities for the stock prediction project.
 
 Key capabilities:
 - Per-symbol return/difference generation.
-- External feature merging (macro/industry/sentiment).
+- External feature merging (macro/industry/other).
 - Sliding window statistics.
 - Optional per-symbol normalization and symbol embedding index mapping.
 """

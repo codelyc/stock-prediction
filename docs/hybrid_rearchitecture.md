@@ -11,7 +11,7 @@
 | ---- | ---- | ---- |
 | `TemporalHybridNet` 主要依赖卷积 + Bi-GRU + Attention | 模型结构固化，难以复用 PTFT、VSSM、Diffusion、Graph 等最新成果 | 新特征需要单独重写模型或维护多套代码 |
 | 多模型输出依赖 `contrast_lines` 或独立脚本对比 | 缺乏统一的融合框架 | 训练成本高、难以进行多模态协同训练 |
-| 外生特征、收益率特征已由 `feature_engineering` 提供 | Hybrid 未充分利用 | 现有模型对宏观/行业/舆情敏感度有限 |
+| 外生特征、收益率特征已由 `feature_engineering` 提供 | Hybrid 未充分利用 | 现有模型对宏观/行业外生信号敏感度有限 |
 
 ---
 
