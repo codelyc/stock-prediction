@@ -1,9 +1,11 @@
 import os
+from datetime import datetime
+from pathlib import Path
+
+from logure import logger
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from pathlib import Path
-from datetime import datetime
 
 # Import models
 from models import (
@@ -301,7 +303,7 @@ class ModelBuilder:
             criterion = nn.MSELoss()
             
         else:
-            print(f"No such model: {self.model_mode}")
+            logger.error(f"No such model: {self.model_mode}")
             exit(0)
 
         # Move to device
@@ -312,16 +314,16 @@ class ModelBuilder:
             test_model = test_model.to(self.device, non_blocking=True)
             
         if torch.cuda.device_count() > 1:
-            print(f"Let's use {torch.cuda.device_count()} GPUs!")
+            logger.info(f"Let's use {torch.cuda.device_count()} GPUs!")
             model = nn.DataParallel(model)
             if self.args.test_gpu == 1:
                 test_model = nn.DataParallel(test_model)
         elif torch.cuda.is_available():
-            print("Let's use 1 GPU!")
+            logger.info("Let's use 1 GPU!")
         else:
-            print("Let's use CPU!")
+            logger.info("Let's use CPU!")
 
-        print(model)
+        logger.info(f"Model:\n{model}")
         
         # Optimizer & Scheduler
         optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
@@ -343,7 +345,7 @@ class ModelBuilder:
         optim_file = f"{ckpt_path}_Optimizer.pkl"
         
         if os.path.exists(model_file) and os.path.exists(optim_file):
-            print("Load model and optimizer from file")
+            logger.info("Load model and optimizer from file")
             try:
                 # Handle DataParallel wrapping
                 state_dict = torch.load(model_file, map_location=self.device)
@@ -354,6 +356,6 @@ class ModelBuilder:
                     
                 optimizer.load_state_dict(torch.load(optim_file, map_location=self.device))
             except Exception as e:
-                 print(f"Error loading checkpoints: {e}, training from scratch.")
+                logger.error(f"Error loading checkpoints: {e}, training from scratch.")
         else:
-            print("No model and optimizer file, train from scratch")
+            logger.info("No model and optimizer file, train from scratch")

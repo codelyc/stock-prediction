@@ -6,6 +6,7 @@ import numpy as np
 import copy
 from tqdm import tqdm
 from torch.utils.data import DataLoader
+from logure import logger
 
 # Import internal modules
 try:
@@ -98,7 +99,7 @@ class InferenceRunner:
             self.norm_stats["name_list"] = list(names)
 
         if missing_symbol_stats and symbol_key:
-            print(f"[WARN] No symbol-specific normalization stats found for {symbol_key}; using global statistics.")
+            logger.warning(f"No symbol-specific normalization stats found for {symbol_key}; using global statistics.")
 
         # Update the global symbol map provided by caller if applicable
         if symbol_key and means and stds and symbol_norm_map is not None:
@@ -127,7 +128,7 @@ class InferenceRunner:
                 
             threshold = 1e-3
             if (mean_diff is not None and mean_diff > threshold) or (std_diff is not None and std_diff > threshold):
-                print(f"[WARN] Normalization mismatch for {symbol_key}: mean_diff={mean_diff}, std_diff={std_diff}")
+                logger.warning(f"Normalization mismatch for {symbol_key}: mean_diff={mean_diff}, std_diff={std_diff}")
         except Exception:
             pass
 
@@ -195,15 +196,15 @@ class InferenceRunner:
                         with open(norm_file, 'r', encoding='utf-8') as f:
                             norm_params = json.load(f)
                         self._apply_norm_from_params(norm_params, symbol=symbol_key, symbol_norm_map=symbol_norm_map)
-                        print(f"[LOG] Loaded normalization params from {norm_file}")
+                        logger.info(f"Loaded normalization params from {norm_file}")
                         
                         if symbol_key and symbol_norm_map and symbol_key in symbol_norm_map:
                             stats = symbol_norm_map[symbol_key]
-                            print(f"[LOG] Using symbol-specific norm stats for {symbol_key} (features={len(stats.get('mean_list', []))})")
+                            logger.info(f"Using symbol-specific norm stats for {symbol_key} (features={len(stats.get('mean_list', []))})")
                         else:
-                            print(f"[LOG] Using global normalization stats (features={len(self.norm_stats['mean_list'])})")
+                            logger.info(f"Using global normalization stats (features={len(self.norm_stats['mean_list'])})")
                     except Exception as e:
-                        print(f"[WARN] Failed to load normalization params from {norm_file}: {e}")
+                        logger.warning(f"Failed to load normalization params from {norm_file}: {e}")
 
                 # Load model args
                 args_file = candidate.replace("_Model.pkl", "_Model_args.json").replace("_Model_best.pkl", "_Model_best_args.json")
@@ -218,9 +219,9 @@ class InferenceRunner:
                                 test_model = test_model.to('cpu', non_blocking=True)
                             else:
                                 test_model = test_model.to(self.device, non_blocking=True)
-                            print(f"[LOG] Loaded model args from {args_file}")
+                            logger.info(f"Loaded model args from {args_file}")
                     except Exception as e:
-                        print(f"[WARN] Failed to load model args from {args_file}: {e}")
+                        logger.warning(f"Failed to load model args from {args_file}: {e}")
 
                 # Fallback if model not created yet (e.g. no args file) - THIS MIGHT FAIL if init requires args
                 # But typically trained models save args. 
@@ -244,7 +245,7 @@ class InferenceRunner:
                         loaded = True
                         break
                     except Exception as e:
-                        print(f"[WARN] Failed to load state dict: {e}")
+                        logger.warning(f"Failed to load state dict: {e}")
         
         return test_model
 
@@ -413,4 +414,3 @@ class InferenceRunner:
             self._warn_if_norm_mismatch(symbol_key, self.norm_stats["mean_list"], self.norm_stats["std_list"], symbol_norm_map)
             
         return test_loss, predict_list, dataloader
-

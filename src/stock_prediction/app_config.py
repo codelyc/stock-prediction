@@ -196,4 +196,3 @@ class AppConfig(BaseModel):
 
 # Usage example:
 # config = AppConfig.from_env_and_yaml("config/config.yaml")
-# print(config)

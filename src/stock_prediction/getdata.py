@@ -1,6 +1,8 @@
 ﻿"""Data acquisition helpers for the stock_prediction package (Akshare only)."""
 from __future__ import annotations
 
+from logure import logger
+
 import argparse
 import datetime
 import random
@@ -169,7 +171,7 @@ def get_stock_data(ts_code: Sequence[str] | str = "", save: bool = True, start_c
                     tqdm.write(message)
                     pbar.update(1)
                 else:
-                    print(message)
+                    logger.warning(message)
                 if getattr(exc, "args", []) and isinstance(exc.args[0], Exception):
                     inner = exc.args[0]
                     text = str(inner)

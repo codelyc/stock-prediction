@@ -7,6 +7,7 @@ import queue
 import random
 from pathlib import Path
 
+from logure import logger
 try:
     from .common import load_data
     from .init import TQDM_NCOLS, data_queue, daily_path, dill, glob, pd, pkl_path, tqdm
@@ -50,14 +51,14 @@ def preprocess_data(pkl_name: str = "train.pkl") -> int:
             dump_queue.put(data)
             pbar.update(1)
         except Exception as exc:  # pragma: no cover - defensive logging
-            print(f"Error processing {ts_code}: {exc}")
+            logger.error(f"Error processing {ts_code}: {exc}")
             pbar.update(1)
             continue
 
     with open(pkl_dir / pkl_name, "wb") as fh:
         dill.dump(dump_queue, fh)
     pbar.close()
-    print("dump_queue size:", dump_queue.qsize())
+    logger.info(f"dump_queue size: {dump_queue.qsize()}")
     return dump_queue.qsize()
 
 

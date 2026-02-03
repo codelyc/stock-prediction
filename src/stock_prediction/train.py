@@ -15,6 +15,7 @@ import dill
 import glob
 from pathlib import Path
 from tqdm import tqdm
+from logure import logger
 
 # Ensure the stock_prediction package is importable before importing internal modules
 current_dir = Path(__file__).resolve().parent
@@ -130,7 +131,7 @@ def main():
             with open('loss.txt', 'r') as file:
                 last_loss = float(file.read())
         except: pass
-    print("last_loss=", last_loss)
+    logger.info(f"last_loss={last_loss}")
 
     mode = args.mode
     model_mode = args.model.upper()
@@ -145,12 +146,12 @@ def main():
     daily_path = config.stock_daily_path
     if PKL and mode in {"train", "test", "predict"} and not pkl_candidate.exists():
         daily_count = len(list(Path(daily_path).glob("*.csv")))
-        print(f"[WARN] PKL file not found: {pkl_candidate}")
+        logger.warning(f"PKL file not found: {pkl_candidate}")
         if daily_count > 0:
             PKL = False
-            print(f"[WARN] Found daily CSV files, fallback to CSV mode (--pkl 0).")
+            logger.warning("Found daily CSV files, fallback to CSV mode (--pkl 0).")
         else:
-            print("[ERROR] No input data found. Please run getdata.py and data_preprocess.py")
+            logger.error("No input data found. Please run getdata.py and data_preprocess.py")
             return
 
     # Determine Symbol (for paths/config)
@@ -204,7 +205,7 @@ def main():
 
     # --- MAIN LOGIC ---
     if mode == 'train':
-        print("Training starting...")
+        logger.info("Training starting...")
         
         # Data Queue Filling (kept from original)
         lo_list.clear() # Global loss list for plotting
@@ -215,7 +216,7 @@ def main():
         # ... (Data loading logic omitted for brevity, using existing queues)
         # Re-implementing the queue filling logic compactly
         if PKL is False:
-            print("Load data from csv using thread ...")
+            logger.info("Load data from csv using thread ...")
             data_thread = threading.Thread(target=load_data, args=(ts_codes,))
             data_thread.start()
             codes_len = len(ts_codes)
@@ -241,7 +242,7 @@ def main():
                         total_test_length += _data.shape[0] - SEQ_LEN
             codes_len = data_queue.qsize()
 
-        print(f"Data ready. Train samples: {total_length}, Test samples: {total_test_length}")
+        logger.info(f"Data ready. Train samples: {total_length}, Test samples: {total_test_length}")
 
         # Update global test length for inference
         runner.total_test_length = total_test_length
@@ -321,7 +322,7 @@ def main():
             last_epoch = epoch
 
         pbar.close()
-        print("Training finished!")
+        logger.info("Training finished!")
         ensure_checkpoint_ready(model, optimizer, save_path)
         
         # Plot Loss
@@ -330,15 +331,15 @@ def main():
         
         # Run Evaluation on a random test code
         if not args.full_train and len(test_codes) > 0:
-            print("Start validation evaluation...")
+            logger.info("Start validation evaluation...")
             test_index = random.randint(0, len(test_codes) - 1)
             evaluator.run_contrast_routine([test_codes[test_index]])
             
-        print(f"Done. Last epoch: {last_epoch}")
+        logger.info(f"Done. Last epoch: {last_epoch}")
 
     elif mode == "test":
         if args.full_train and not test_codes and not args.test_code:
-            print("No test data.")
+            logger.warning("No test data.")
             return
 
         if args.test_code and args.test_code != "all":
@@ -351,7 +352,7 @@ def main():
             
     elif mode == "predict":
         if not args.test_code:
-            print("Error: test_code is empty")
+            logger.error("Error: test_code is empty")
             return
         evaluator.run_prediction([args.test_code])
 

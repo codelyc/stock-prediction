@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Tuple
 from torchvision.models import resnet101  # unused placeholder import
+from logure import logger
 
 from models.lstm_basic import LSTM
 from models.transformer_classic import TransformerModel
@@ -134,7 +135,7 @@ class Stock_Data(Dataset):
                     self.value, self.label = tensors
                     self.symbol_tensor = None
         except Exception as e:
-            print(e)
+            logger.error(f"Stock_Data init error: {e}")
             self.data = np.empty((0, INPUT_DIMENSION), dtype=np.float32)
             self.value = torch.empty(0, SEQ_LEN, INPUT_DIMENSION, dtype=torch.float32)
             if self.predict_days > 0:
@@ -370,7 +371,7 @@ class stock_queue_dataset(Dataset):
             self.trend = trend
             self.use_symbol_embedding = feature_engineer.settings.use_symbol_embedding
         except Exception as e:
-            print(e)
+            logger.error(f"stock_queue_dataset init error: {e}")
             return None
 
     def load_data(self):
@@ -602,7 +603,7 @@ class stock_queue_dataset(Dataset):
                 return value, label, symbol
             return value, label
         except Exception as e:
-            print(e)
+            logger.error(f"stock_queue_dataset __getitem__ error: {e}")
             return (None, None, None) if self.use_symbol_embedding else (None, None)
 
     def __len__(self):
@@ -658,7 +659,7 @@ def import_csv(stock_code, dataFrame=None, csv_file=None):
         df['Date'] = pd.to_datetime(df['Date'], format='%Y%m%d')
         df.set_index(df['Date'], inplace=True)
     except Exception as e:
-        print(stock_code, e)
+        logger.error(f"{stock_code} {e}")
         return None
 
     if df.empty:
@@ -848,7 +849,7 @@ def add_target(df):
         return df
     except Exception as e:
         df_queue.queue.clear()
-        print(f"{df['ts_code']} {e}")
+        logger.error(f"{df['ts_code']} {e}")
         return None
 
 
@@ -954,10 +955,10 @@ def save_model(model, optimizer, save_path, best_model=False, predict_days=0):
                     s = 1.0
                 means.append(m)
                 stds.append(s)
-            print(f"[LOG] Auto-computed normalization params from PKL: {len(means)} features")
+            logger.info(f"Auto-computed normalization params from PKL: {len(means)} features")
             return means, stds
         except Exception as e:
-            print(f"[WARN] Auto-compute norm params from PKL failed: {e}")
+            logger.warning(f"Auto-compute norm params from PKL failed: {e}")
             return None, None
 
     def save_with_args(model_path, optimizer_path, args_path, norm_path):
@@ -971,7 +972,7 @@ def save_model(model, optimizer, save_path, best_model=False, predict_days=0):
                 with open(args_path, 'w', encoding='utf-8') as f:
                     json.dump(model_args, f, ensure_ascii=False, indent=2)
             except Exception as e:
-                print(f"[WARN] Failed to save model args: {e}")
+                logger.warning(f"Failed to save model args: {e}")
 
         # 3) 保存归一化参数（稳定副本 → 全局 → 自动计算）
         try:
@@ -985,7 +986,7 @@ def save_model(model, optimizer, save_path, best_model=False, predict_days=0):
                     try:
                         saved_mean_list.clear(); saved_mean_list.extend(use_mean)  # type: ignore
                         saved_std_list.clear(); saved_std_list.extend(use_std)    # type: ignore
-                        print("[LOG] Filled normalization params into saved_mean_list/saved_std_list from PKL")
+                        logger.info("Filled normalization params into saved_mean_list/saved_std_list from PKL")
                     except Exception:
                         pass
 
@@ -1034,7 +1035,7 @@ def save_model(model, optimizer, save_path, best_model=False, predict_days=0):
                                 'std_list': stds,
                             }
                 except Exception as exc:
-                    print(f"[WARN] Failed to backfill per-symbol norm stats: {exc}")
+                    logger.warning(f"Failed to backfill per-symbol norm stats: {exc}")
 
             _backfill_symbol_stats()
 
@@ -1058,12 +1059,12 @@ def save_model(model, optimizer, save_path, best_model=False, predict_days=0):
             if per_symbol_payload:
                 norm_params['per_symbol'] = per_symbol_payload
             else:
-                print('[WARN] per_symbol stats empty; only global normalization will be saved.')
+                logger.warning("per_symbol stats empty; only global normalization will be saved.")
             with open(norm_path, 'w', encoding='utf-8') as f:
                 json.dump(norm_params, f, ensure_ascii=False, indent=2)
 
         except Exception as e:
-            print(f"[WARN] Failed to save normalization params: {e}")
+            logger.warning(f"Failed to save normalization params: {e}")
 
     # 目标路径拼装与调用
     if predict_days > 0:
@@ -1233,7 +1234,7 @@ def plot_feature_comparison(symbol, model_name, feature, history_series, predict
         csv_path = save_path.with_suffix('.csv')
         merged.to_csv(csv_path, index=False, encoding='utf-8')
     except Exception as e:
-        print(f"[WARN] Failed to export CSV for plot {save_path.name}: {e}")
+        logger.warning(f"Failed to export CSV for plot {save_path.name}: {e}")
     return save_path
 
 

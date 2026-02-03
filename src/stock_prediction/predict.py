@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from logure import logger
 import sys
 import queue
 import dill
@@ -95,10 +96,10 @@ if os.path.exists(train_pkl_path):
             unique_symbols = train_data['ts_code'].unique()
         symbol_to_id = {symbol: i for i, symbol in enumerate(unique_symbols)}
     except Exception as e:
-        print(f"[WARN] Failed to load train_pkl: {e}")
+        logger.warning(f"Failed to load train_pkl: {e}")
 else:
     # 正常运行时如果没有 pkl，后续 predict() 里的检验会抛出错误提示用户
-    print(f"[WARN] Skipping initial train_pkl load: {train_pkl_path} not found")
+    logger.warning(f"Skipping initial train_pkl load: {train_pkl_path} not found")
 
 
 def _apply_norm_from_params(norm_params, symbol=None):
@@ -148,7 +149,7 @@ def _apply_norm_from_params(norm_params, symbol=None):
         name_list.extend(names)
 
     if missing_symbol_stats and symbol_key:
-        print(f"[WARN] No symbol-specific normalization stats found for {symbol_key}; using global statistics.")
+        logger.warning(f"No symbol-specific normalization stats found for {symbol_key}; using global statistics.")
 
     if symbol_key and means and stds:
         record_symbol_norm(symbol_key, means, stds)
@@ -172,9 +173,11 @@ def _warn_if_norm_mismatch(symbol_key, observed_means, observed_stds, context):
         if exp_std.size and obs_std.size and exp_std.shape == obs_std.shape:
             std_diff = float(np.max(np.abs(exp_std - obs_std)))
         if (mean_diff is not None and mean_diff > threshold) or (std_diff is not None and std_diff > threshold):
-            print(f"[WARN] Normalization mismatch detected for {symbol_key} during {context}: "
-                  f"mean diff={mean_diff if mean_diff is not None else 'n/a'}, "
-                  f"std diff={std_diff if std_diff is not None else 'n/a'}")
+            logger.warning(
+                f"Normalization mismatch detected for {symbol_key} during {context}: "
+                f"mean diff={mean_diff if mean_diff is not None else 'n/a'}, "
+                f"std diff={std_diff if std_diff is not None else 'n/a'}"
+            )
     except Exception:
         pass
 
@@ -397,10 +400,10 @@ def test(dataset, testmodel=None, dataloader_mode=0, symbol_index=None, norm_sym
                 try:
                     with open(args_path, 'r', encoding='utf-8') as f:
                         model_args = json.load(f)
-                    print(f"[INFO] Loaded model args from {args_path}")
+                    logger.info(f"Loaded model args from {args_path}")
                     break
                 except Exception as e:
-                    print(f"[WARN] Failed to load model args: {e}")
+                    logger.warning(f"Failed to load model args: {e}")
 
         if model_mode == "HYBRID":
             from stock_prediction.hybrid_config import get_adaptive_hybrid_config
@@ -439,14 +442,14 @@ def test(dataset, testmodel=None, dataloader_mode=0, symbol_index=None, norm_sym
                         with open(norm_file, 'r', encoding='utf-8') as f:
                             norm_params = json.load(f)
                         _apply_norm_from_params(norm_params, symbol=symbol_key)
-                        print(f"[LOG] Loaded normalization params from {norm_file}")
+                        logger.info(f"Loaded normalization params from {norm_file}")
                         if symbol_key and symbol_key in symbol_norm_map:
                             stats = symbol_norm_map[symbol_key]
-                            print(f"[LOG] Using symbol-specific norm stats for {symbol_key} (features={len(stats.get('mean_list', []))})")
+                            logger.info(f"Using symbol-specific norm stats for {symbol_key} (features={len(stats.get('mean_list', []))})")
                         else:
-                            print(f"[LOG] Using global normalization stats (features={len(mean_list)})")
+                            logger.info(f"Using global normalization stats (features={len(mean_list)})")
                     except Exception as e:
-                        print(f"[WARN] Failed to load normalization params: {e}")
+                        logger.warning(f"Failed to load normalization params: {e}")
                 test_model.load_state_dict(torch.load(candidate, map_location=device))
                 loaded = True
                 break
@@ -509,43 +512,43 @@ def test(dataset, testmodel=None, dataloader_mode=0, symbol_index=None, norm_sym
 
 
 def predict(test_codes):
-    print(f"[LOG] predict() called with test_codes={test_codes}")
+    logger.info(f"predict() called with test_codes={test_codes}")
     if not test_codes:
-        print("[LOG] test_codes is empty, abort.")
+        logger.warning("test_codes is empty, abort.")
         raise ValueError("test_codes is empty")
     if PKL == 0:
-        print("[LOG] Using CSV data loading mode.")
+        logger.info("Using CSV data loading mode.")
         load_data(test_codes, data_queue=data_queue)
         try:
             data = data_queue.get(timeout=30)
         except queue.Empty:
-            print("[LOG] data_queue is empty after load_data.")
+            logger.warning("data_queue is empty after load_data.")
             raise RuntimeError("data_queue is empty")
     else:
-        print(f"[LOG] Using PKL mode, loading from {train_pkl_path}")
+        logger.info(f"Using PKL mode, loading from {train_pkl_path}")
         with open(train_pkl_path, 'rb') as f:
             data_queue = ensure_queue_compatibility(dill.load(f))
         data = None
         while not data_queue.empty():
             item = data_queue.get()
-            print(f"[LOG] Checking ts_code in pkl: {str(item['ts_code'].iloc[0]).zfill(6)}")
+            logger.info(f"Checking ts_code in pkl: {str(item['ts_code'].iloc[0]).zfill(6)}")
             if str(item['ts_code'].iloc[0]).zfill(6) == str(test_codes[0]):
                 data = copy.deepcopy(item)
-                print(f"[LOG] Found target ts_code: {test_codes[0]}, shape={data.shape}")
+                logger.info(f"Found target ts_code: {test_codes[0]}, shape={data.shape}")
                 break
         if data is None:
-            print(f"[LOG] Target symbol {test_codes[0]} not found inside pkl queue")
+            logger.warning(f"Target symbol {test_codes[0]} not found inside pkl queue")
             raise RuntimeError("Target symbol missing from preprocessed queue")
 
     if data.empty or data['ts_code'].iloc[0] == "None":
-        print(f"[LOG] Data is empty or ts_code invalid, data.empty={data.empty}, ts_code={data['ts_code'].iloc[0]}")
+        logger.warning(f"Data is empty or ts_code invalid, data.empty={data.empty}, ts_code={data['ts_code'].iloc[0]}")
         raise RuntimeError("Data is empty or ts_code is invalid")
 
     data = normalize_date_column(data)
     predict_data = normalize_date_column(copy.deepcopy(data))
     spliced_data = normalize_date_column(copy.deepcopy(data))
-    print(f"[LOG] predict_data.columns: {list(predict_data.columns)}")
-    print(f"[LOG] predict_data.shape: {predict_data.shape}")
+    logger.info(f"predict_data.columns: {list(predict_data.columns)}")
+    logger.info(f"predict_data.shape: {predict_data.shape}")
 
     # Prepare symbol index for embedding
     raw_code = str(test_codes[0])
@@ -558,19 +561,19 @@ def predict(test_codes):
         symbol_index = torch.tensor([symbol_to_id.get(symbol_lookup, 0)])
     if int(args.predict_days) <= 0:
         predict_days = abs(int(args.predict_days)) or 1
-        print(f"[LOG] predict_days={predict_days}")
+        logger.info(f"predict_days={predict_days}")
         pbar = tqdm(total=predict_days, leave=False, ncols=TQDM_NCOLS)
         predicted_rows: list[dict] = []
         while predict_days > 0:
             predict_days -= 1
             lastdate = pd.to_datetime(predict_data['Date'].iloc[0])
-            print(f"[LOG] lastdate={lastdate.strftime('%Y%m%d')}")
+            logger.info(f"lastdate={lastdate.strftime('%Y%m%d')}")
 
             normalized_predict = normalize_date_column(predict_data)
             features_df = normalized_predict.drop(columns=['ts_code', 'Date']).copy()
             features_df = features_df.fillna(features_df.median(numeric_only=True))
             _, predict_list, _ = test(features_df, dataloader_mode=2, symbol_index=symbol_index, norm_symbol=symbol_code)
-            print(f"[LOG] predict_list len: {len(predict_list)}")
+            logger.info(f"predict_list len: {len(predict_list)}")
 
             rows = []
             for items in predict_list:
@@ -584,7 +587,7 @@ def predict(test_codes):
                         rows.append(row)
 
             if not rows:
-                print("[LOG] No valid prediction results, ending early.")
+                logger.warning("No valid prediction results, ending early.")
             date_obj = lastdate + timedelta(days=1)
             new_row = [test_codes[0], date_obj]
             if rows:
@@ -620,7 +623,7 @@ def predict(test_codes):
         bias_corrections = load_bias_corrections(symbol_code, model_mode)
         if bias_corrections and not predicted_df.empty:
             if apply_bias_corrections_to_dataframe(predicted_df, bias_corrections):
-                print(f"[LOG] Applied bias corrections for {symbol_code}: {bias_corrections}")
+                logger.info(f"Applied bias corrections for {symbol_code}: {bias_corrections}")
 
         for col in PLOT_FEATURE_COLUMNS:
             if col not in history_df.columns:
@@ -668,13 +671,13 @@ def predict(test_codes):
             }
             with open(metrics_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f, ensure_ascii=False, indent=2)
-            print(f"[LOG] Metrics saved: {metrics_path}")
+            logger.info(f"Metrics saved: {metrics_path}")
     else:
         normalized_predict = normalize_date_column(predict_data)
         feature_frame = normalized_predict.drop(columns=['ts_code', 'Date']).copy()
         feature_frame = feature_frame.fillna(feature_frame.median(numeric_only=True))
         test_loss, predict_list, _ = test(feature_frame, dataloader_mode=2, symbol_index=symbol_index, norm_symbol=symbol_code)
-        print("test loss:", test_loss)
+        logger.info(f"test loss: {test_loss}")
 
         predictions = []
         for items in predict_list:
@@ -703,7 +706,7 @@ def predict(test_codes):
         bias_corrections = load_bias_corrections(symbol_code, model_mode)
         if bias_corrections and not pred_df.empty:
             if apply_bias_corrections_to_dataframe(pred_df, bias_corrections):
-                print(f"[LOG] Applied bias corrections for {symbol_code}: {bias_corrections}")
+                logger.info(f"Applied bias corrections for {symbol_code}: {bias_corrections}")
 
         metrics_out = {}
         distribution_out = {}
@@ -744,7 +747,7 @@ def predict(test_codes):
             }
             with open(metrics_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f, ensure_ascii=False, indent=2)
-            print(f"[LOG] Metrics saved: {metrics_path}")
+            logger.info(f"Metrics saved: {metrics_path}")
         return predict_list
 
 
@@ -768,7 +771,7 @@ def main(argv=None):
             candidates = [line.strip() for line in lines if line.strip()]
             if candidates:
                 candidate_code = random.choice(candidates)
-                print(f'[LOG] test_code not provided; randomly selected {candidate_code}')
+                logger.info(f"test_code not provided; randomly selected {candidate_code}")
         if candidate_code is None:
             raise ValueError('test_code is empty and no valid entries found in test_codes.txt')
         args.test_code = candidate_code

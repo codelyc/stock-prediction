@@ -10,6 +10,7 @@ import math
 from pathlib import Path
 from typing import Dict, Mapping, MutableMapping
 
+from logure import logger
 import pandas as pd
 
 from .metrics import distribution_report, metrics_report
@@ -55,11 +56,11 @@ def evaluate_feature_metrics(
     bias = dist_data.get("bias")
 
     if _is_number(pred_std) and float(pred_std) <= STD_FLOOR:
-        print(f"[WARN] {feature_name} 预测标准差≈0，模型可能只输出常数值。")
+        logger.warning(f"{feature_name} 预测标准差≈0，模型可能只输出常数值。")
     if _is_number(std_ratio) and float(std_ratio) < STD_RATIO_WARNING:
-        print(f"[WARN] {feature_name} 振幅偏低（std_ratio={float(std_ratio):.3f}），建议提升波动约束或切换收益目标。")
+        logger.warning(f"{feature_name} 振幅偏低（std_ratio={float(std_ratio):.3f}），建议提升波动约束或切换收益目标。")
     if _is_number(bias) and abs(float(bias)) > BIAS_WARNING:
-        print(f"[WARN] {feature_name} 预测均值偏移 {float(bias):+.3f}，请检查归一化统计或损失权重。")
+        logger.warning(f"{feature_name} 预测均值偏移 {float(bias):+.3f}，请检查归一化统计或损失权重。")
 
 
 def _bias_file(symbol: str, model: str) -> Path:
@@ -78,7 +79,7 @@ def load_bias_corrections(symbol: str, model: str) -> Dict[str, float]:
         if isinstance(data, dict):
             return {k: float(v) for k, v in data.items()}
     except Exception as exc:  # pragma: no cover
-        print(f"[WARN] Failed to load bias corrections from {path}: {exc}")
+        logger.warning(f"Failed to load bias corrections from {path}: {exc}")
     return {}
 
 

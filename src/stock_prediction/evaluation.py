@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from tqdm import tqdm
 import torch
+from logure import logger
 
 # Internal modules
 from stock_prediction.common import (
@@ -69,7 +70,7 @@ class Evaluator:
     def plot_loss_curve(self, loss_list, cnname="Stock"):
         try:
             if not loss_list:
-                print("[WARN] loss_curve: loss_list is empty, skip plotting")
+                logger.warning("loss_curve: loss_list is empty, skip plotting")
                 return
             save_dir = Path(self.png_path) / "train_loss"
             save_dir.mkdir(parents=True, exist_ok=True)
@@ -87,12 +88,12 @@ class Evaluator:
             img_path = save_dir / f"{cnname}_{self.model_mode}_{timestamp}_train_loss.png"
             plt.savefig(img_path, dpi=600)
             plt.close()
-            print(f"[LOG] Training loss figure saved: {img_path}")
+            logger.info(f"Training loss figure saved: {img_path}")
         except Exception as e:
-            print("Error: loss_curve", e)
+            logger.error(f"Error: loss_curve {e}")
 
     def run_prediction(self, test_codes):
-        print("test_code=", test_codes)
+        logger.info(f"test_code={test_codes}")
         data = NoneDataFrame
         
         # Load Data
@@ -101,7 +102,7 @@ class Evaluator:
             try:
                 data = data_queue.get(timeout=30)
             except queue.Empty:
-                print("Error: data_queue is empty")
+                logger.error("Error: data_queue is empty")
                 return
         else:
             with open(self.train_pkl_path, 'rb') as f:
@@ -119,17 +120,17 @@ class Evaluator:
         data = normalize_date_column(data)
 
         if data.empty or (isinstance(data, pd.DataFrame) and data.empty) or (hasattr(data, 'iloc') and data["ts_code"].iloc[0] == "None"):
-            print("Error: data is empty or ts_code is None")
+            logger.error("Error: data is empty or ts_code is None")
             return
 
         # Double check match
         if str(data['ts_code'].iloc[0]).zfill(6) != str(test_codes[0]):
-            print("Error: ts_code is not match")
+            logger.error("Error: ts_code is not match")
             return
 
         predict_size = int(data.shape[0])
         if predict_size < SEQ_LEN:
-            print("Error: train_size is too small or too large")
+            logger.error("Error: train_size is too small or too large")
             return
 
         predict_data = normalize_date_column(copy.deepcopy(data))
@@ -254,7 +255,7 @@ class Evaluator:
             
             if not name_list or not show_list:
                  # Fallback if uninitialized
-                 print("[WARN] Name list or show list empty, using numeric indices")
+                 logger.warning("Name list or show list empty, using numeric indices")
                  pred_columns = [str(i) for i in range(INPUT_DIMENSION)] # Approx?
             else:
                  selected_features = [name_list[idx] for idx, flag in enumerate(show_list) if flag == 1]
@@ -263,7 +264,7 @@ class Evaluator:
 
             # Adjust if dimension mismatch
             if predictions and len(pred_columns) != len(predictions[0]):
-                 print(f"[WARN] Prediction dim {len(predictions[0])} != Columns {len(pred_columns)}")
+                 logger.warning(f"Prediction dim {len(predictions[0])} != Columns {len(pred_columns)}")
                  # Truncate or use indices
                  pred_columns = [f"Feat_{i}" for i in range(len(predictions[0]))]
 
@@ -344,11 +345,11 @@ class Evaluator:
             }
             with open(metrics_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f, ensure_ascii=False, indent=2)
-            print(f"[LOG] Metrics saved: {metrics_path}")
+            logger.info(f"Metrics saved: {metrics_path}")
 
     def run_contrast_routine(self, test_codes):
         if getattr(self.args, "full_train", False):
-            print("[LOG] full_train enabled, skip contrast_lines.")
+            logger.info("full_train enabled, skip contrast_lines.")
             return
 
         data = NoneDataFrame
@@ -357,7 +358,7 @@ class Evaluator:
             try:
                 data = data_queue.get(timeout=30)
             except queue.Empty:
-                print("Error: data_queue is empty")
+                logger.error("Error: data_queue is empty")
                 return
         else:
             # Need to scan pkl for the code
@@ -373,7 +374,7 @@ class Evaluator:
                     break
             
             if data is NoneDataFrame:
-                print("Error: data is None (Found no matching code in PKL)")
+                logger.error("Error: data is None (Found no matching code in PKL)")
                 return
 
         data = normalize_date_column(data)
@@ -389,19 +390,19 @@ class Evaluator:
              else:
                   symbol_id = feature_engineer.symbol_to_id.get(ts_code_value, 0)
              data['_symbol_index'] = symbol_id
-             print(f"[LOG] Added _symbol_index={symbol_id} for ts_code={ts_code_value}")
+             logger.info(f"Added _symbol_index={symbol_id} for ts_code={ts_code_value}")
 
         feature_data = data.drop(columns=['ts_code', 'Date'], errors='ignore').copy()
         feature_data = feature_data.fillna(feature_data.median(numeric_only=True))
-        print("test_code=", test_codes)
+        logger.info(f"test_code={test_codes}")
         
         if feature_data.empty:
-             print("Error: data is empty")
+             logger.error("Error: data is empty")
              return -1
              
         train_size = int(TRAIN_WEIGHT * (feature_data.shape[0]))
         if train_size < SEQ_LEN or train_size + SEQ_LEN > feature_data.shape[0]:
-            print("Error: train_size is too small or too large")
+            logger.error("Error: train_size is too small or too large")
             return -1
 
         # Test on Full Data or Split? Original code uses copy of feature_data as Test_data
@@ -413,7 +414,7 @@ class Evaluator:
         )
         
         if test_loss == -1 and predict_list == -1:
-            print("Error: No model exists")
+            logger.error("Error: No model exists")
             return -1
 
         # Reconstruct Real vs Pred
@@ -486,7 +487,7 @@ class Evaluator:
         min_len = min(len(real_array), len(pred_array))
         
         if min_len == 0:
-             print("Error: No valid results")
+             logger.error("Error: No valid results")
              return
              
         plot_window = self.resolve_plot_window(min_len)
