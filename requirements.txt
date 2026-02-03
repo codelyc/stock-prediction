@@ -10,4 +10,8 @@ mplfinance
 prefetch_generator
 dill
 akshare
+pytest
+pydantic
+python-dotenv
+PyYAML
 

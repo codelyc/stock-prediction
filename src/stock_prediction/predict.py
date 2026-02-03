@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # coding: utf-8
 import argparse
 import copy
@@ -72,22 +72,33 @@ else:
 
 # Load symbol mapping for embedding
 import dill
-train_data = dill.load(open(train_pkl_path, 'rb'))
-if isinstance(train_data, queue.Queue):
-    temp_queue = deep_copy_queue(train_data)
-    all_data = []
-    while not temp_queue.empty():
-        item = temp_queue.get()
-        all_data.append(item)
-    if all_data:
-        train_df = pd.concat(all_data, ignore_index=True)
-        unique_symbols = train_df['ts_code'].unique()
+
+# Initialize defaults
+train_data = None
+symbol_to_id = {}
+
+if os.path.exists(train_pkl_path):
+    try:
+        train_data = dill.load(open(train_pkl_path, 'rb'))
+        if isinstance(train_data, queue.Queue):
+            temp_queue = deep_copy_queue(train_data)
+            all_data = []
+            while not temp_queue.empty():
+                item = temp_queue.get()
+                all_data.append(item)
+            if all_data:
+                train_df = pd.concat(all_data, ignore_index=True)
+                unique_symbols = train_df['ts_code'].unique()
+            else:
+                unique_symbols = []
+        else:
+            unique_symbols = train_data['ts_code'].unique()
         symbol_to_id = {symbol: i for i, symbol in enumerate(unique_symbols)}
-    else:
-        symbol_to_id = {}
+    except Exception as e:
+        print(f"[WARN] Failed to load train_pkl: {e}")
 else:
-    unique_symbols = train_data['ts_code'].unique()
-symbol_to_id = {symbol: i for i, symbol in enumerate(unique_symbols)}
+    # 正常运行时如果没有 pkl，后续 predict() 里的检验会抛出错误提示用户
+    print(f"[WARN] Skipping initial train_pkl load: {train_pkl_path} not found")
 
 
 def _apply_norm_from_params(norm_params, symbol=None):
@@ -444,9 +455,12 @@ def test(dataset, testmodel=None, dataloader_mode=0, symbol_index=None, norm_sym
     else:
         test_model = testmodel
 
+    device_target = device if args.test_gpu == 1 else torch.device("cpu")
+    if test_model:
+        test_model = test_model.to(device_target)
     test_model.eval()
     criterion = nn.MSELoss()
-    device_target = device if args.test_gpu == 1 else torch.device("cpu")
+
     pbar = tqdm(total=len(dataloader), leave=False, ncols=TQDM_NCOLS)
     with torch.no_grad():
         for batch in dataloader:
@@ -665,11 +679,16 @@ def predict(test_codes):
         predictions = []
         for items in predict_list:
             items = items.to("cpu")
+            if items.dim() == 3:
+                items = items[:, 0, :]
             for idxs in items:
                 row = []
                 for index, item in enumerate(idxs):
-                    if show_list[index] == 1:
-                        row.append(float(item * std_list[index] + mean_list[index]))
+                    if index < len(show_list) and show_list[index] == 1:
+                        if index < len(std_list) and index < len(mean_list):
+                             row.append(float(item * std_list[index] + mean_list[index]))
+                        else:
+                             row.append(float(item))
                 if row:
                     predictions.append(row)
 

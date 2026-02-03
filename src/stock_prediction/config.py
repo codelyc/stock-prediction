@@ -3,6 +3,7 @@ Centralised configuration utilities for managing project paths.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
@@ -12,7 +13,11 @@ class Config:
     def __init__(self, root_path: str | Path | None = None) -> None:
         # Determine repository root
         if root_path is None:
-            self.root_path = Path(__file__).resolve().parents[2]
+            env_root = os.getenv("STOCK_PREDICTION_ROOT")
+            if env_root:
+                self.root_path = Path(env_root)
+            else:
+                self.root_path = Path(__file__).resolve().parents[2]
         else:
             self.root_path = Path(root_path)
 

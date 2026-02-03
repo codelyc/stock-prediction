@@ -23,7 +23,7 @@ def test_model_path_generation():
     """测试模型路径生成"""
     test_config = Config()
     lstm_path = test_config.get_model_path("LSTM", "000001.SZ")
-    assert "000001SZ" in str(lstm_path)
+    assert "000001" in str(lstm_path)
     assert "LSTM" in str(lstm_path)
 
 

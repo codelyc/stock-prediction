@@ -2207,6 +2207,8 @@ dependencies = [
     { name = "pandas", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "prefetch-generator" },
     { name = "pydantic" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "seaborn" },
@@ -2214,12 +2216,6 @@ dependencies = [
     { name = "torchvision" },
     { name = "tqdm" },
     { name = "tushare" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-cov" },
 ]
 
 [package.metadata]
@@ -2232,8 +2228,8 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.0.0" },
     { name = "prefetch-generator", specifier = ">=1.0.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.3.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
+    { name = "pytest", specifier = ">=7.3.0" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "seaborn", specifier = ">=0.12.0" },
@@ -2242,10 +2238,6 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.65.0" },
     { name = "tushare", specifier = ">=1.2.0" },
 ]
-provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = []
 
 [[package]]
 name = "sympy"

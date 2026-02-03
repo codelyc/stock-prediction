@@ -19,4 +19,4 @@ jobs:
       - name: Lint
         run: echo "Add ruff/mypy later"
       - name: Test
-        run: python -m pytest -q || true
+        run: python -m pytest -q

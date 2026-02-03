@@ -111,6 +111,7 @@ class AppConfig(BaseModel):
     train_pkl_path: str = Field(..., description="Path to the training data queue (pkl)")
     png_path: str = Field(..., description="Directory for generated charts")
     model_path: str = Field(..., description="Directory for persisted model checkpoints")
+    stock_daily_path: str = Field("./stock_daily", description="Directory for daily stock CSV files")
     batch_size: int = Field(32, description="Mini-batch size")
     epoch: int = Field(2, description="Number of training epochs")
     # Training related
@@ -149,6 +150,7 @@ class AppConfig(BaseModel):
             "train_pkl_path": os.getenv("TRAIN_PKL_PATH"),
             "png_path": os.getenv("PNG_PATH"),
             "model_path": os.getenv("MODEL_PATH"),
+            "stock_daily_path": os.getenv("STOCK_DAILY_PATH"),
             "batch_size": os.getenv("BATCH_SIZE"),
             "epoch": os.getenv("EPOCH"),
             "scheduler_type": os.getenv("SCHEDULER_TYPE"),
@@ -178,6 +180,18 @@ class AppConfig(BaseModel):
         model_dir = Path(self.model_path) / symbol_clean / model_type.upper()
         model_dir.mkdir(parents=True, exist_ok=True)
         return str(model_dir / model_type.upper())
+
+    @property
+    def lstm_path(self) -> str:
+        return str(Path(self.model_path) / "LSTM")
+
+    @property
+    def transformer_path(self) -> str:
+        return str(Path(self.model_path) / "TRANSFORMER")
+
+    @property
+    def cnnlstm_path(self) -> str:
+        return str(Path(self.model_path) / "CNNLSTM")
 
 
 # Usage example:
