@@ -52,7 +52,7 @@
 
 ### 3.1 主推：PTFT + V-SSM 双轨融合
 - **思路**：PTFT 输出高精度、多分位预测；V-SSM 提供市场状态概率，两者融合后调整预测区间。
-- **实现提示**：代码位于 `src/stock_prediction/models/ptft.py`、`vssm.py`、`ptft_vssm.py`；CLI 新增 `--model ptft_vssm`，损失函数 `PTFTVSSMLoss` 自动叠加 KL 正则。
+- **实现提示**：代码位于 `src/models/ptft.py`、`vssm.py`、`ptft_vssm.py`；CLI 新增 `--model ptft_vssm`，损失函数 `PTFTVSSMLoss` 自动叠加 KL 正则。
 - **实施步骤**：
   1. 特征工程：通过 `feature_engineering.py` 生成对数收益率/差分特征，按配置合并外生变量，并对多股票样本进行滑动窗口聚合。
   2. 模型训练：分别训练 PTFT 与 V-SSM，关注 RMSE、分位损失、regime 分类准确率等指标。

@@ -8,7 +8,7 @@ if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
 import torch
-from stock_prediction.models import (
+from models import (
     TemporalHybridNet,
     ProbTemporalFusionTransformer,
     VariationalStateSpaceModel,

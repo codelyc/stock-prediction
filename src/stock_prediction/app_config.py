@@ -173,7 +173,8 @@ class AppConfig(BaseModel):
     def get_model_path(self, model_type: str, symbol: str = "GenericData") -> str:
         """Keep compatibility with config.py by mirroring the model path layout."""
 
-        symbol_clean = symbol.replace(".", "")
+        symbol_str = str(symbol)
+        symbol_clean = symbol_str.split(".")[0] if symbol_str else "Generic"
         model_dir = Path(self.model_path) / symbol_clean / model_type.upper()
         model_dir.mkdir(parents=True, exist_ok=True)
         return str(model_dir / model_type.upper())

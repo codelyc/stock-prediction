@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from stock_prediction.models.hybrid_loss import HybridLoss
+from models.hybrid_loss import HybridLoss
 
 
 class _DummyModel(nn.Module):

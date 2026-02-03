@@ -25,7 +25,7 @@ src_dir = root_dir / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-from stock_prediction.models import (
+from models import (
     LSTM,
     AttentionLSTM,
     BiLSTM,

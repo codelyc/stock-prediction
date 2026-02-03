@@ -65,7 +65,8 @@ class Config:
     def get_model_path(self, model_type: str, symbol: str = "Generic.Data") -> Path:
         """Return the canonical checkpoint path for the given model type and symbol."""
 
-        symbol_clean = symbol.replace(".", "")
+        symbol_str = str(symbol)
+        symbol_clean = symbol_str.split(".")[0] if symbol_str else "Generic"
         model_dir = self.models_path / symbol_clean / model_type.upper()
         model_dir.mkdir(parents=True, exist_ok=True)
         return model_dir / model_type.upper()

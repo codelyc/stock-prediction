@@ -102,7 +102,7 @@ uv run pytest -q
 | 30 vs 46 dim mismatch        | Symbol index unified, ensure *_Model_args.json is loaded       |
 
 ## Contribution Guide
-1. Add new models in `src/stock_prediction/models/` and register entry.
+1. Add new models in `src/models/` and register entry.
 2. Update tests and docs accordingly.
 3. Follow PEP8 + type hints, run pytest before commit.
 
@@ -140,7 +140,7 @@ For more background and future plans, see docs/model_strategy.md and docs/system
 
 ## 贡献指南| `transformer` | 自定义 Transformer 编解码结构 | 长序列建模 |
 
-1. 新增模型请在 src/stock_prediction/models/ 实现，并注册入口。| `cnnlstm` | CNN + LSTM + Attention | 多步预测（需 `predict_days` > 0）|
+1. 新增模型请在 src/models/ 实现，并注册入口。| `cnnlstm` | CNN + LSTM + Attention | 多步预测（需 `predict_days` > 0）|
 
 2. 同步更新测试和文档。| `hybrid` | Hybrid Aggregator（卷积/GRU + PTFT/VSSM/Diffusion/Graph 总线）| 多模态特征融合 |
 
@@ -209,7 +209,7 @@ type output\metrics_*.json
 | 推理时 30 vs 46 维度不匹配 | 启用 symbol embedding 后需要 `_symbol_index` | 训练/测试/推理已统一在数据管线中注入 symbol 索引；确保 predict/test 读取到了 `*_Model_args.json` 以复现训练配置 |
 
 ## 贡献指南
-1. 新增模型请在 `src/stock_prediction/models/` 中实现，并在训练/推理入口注册。
+1. 新增模型请在 `src/models/` 中实现，并在训练/推理入口注册。
 2. 同步更新测试（`tests/test_models.py`）与文档（尤其是 `docs/model_strategy.md`、`CHANGELOG.md`）。
 3. 遵循编码规范（PEP8 + 类型注释），提交前请运行 `pytest`。
 

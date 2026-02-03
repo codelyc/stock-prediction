@@ -69,7 +69,7 @@ uv run python scripts/predict.py --model transformer --test_code 000001 --predic
 ## Key Code Areas
 - `src/stock_prediction/feature_engineering.py`: feature pipeline and indicators.
 - `src/stock_prediction/trainer.py`: training loop, early stopping, metrics.
-- `src/stock_prediction/models/`: model implementations and registrations.
+- `src/models/`: model implementations and registrations.
 - `src/stock_prediction/metrics.py`: evaluation metrics (RMSE, MAPE, VaR, etc.).
 
 ## Configuration & Artifacts
@@ -83,7 +83,7 @@ uv run python scripts/predict.py --model transformer --test_code 000001 --predic
 
 ## Tests & Quality
 - Tests live in `tests/` and run with `uv run pytest -q`.
-- If adding a new model, register it under `src/stock_prediction/models/` and
+- If adding a new model, register it under `src/models/` and
   update docs/tests accordingly.
 
 ## Docs

@@ -42,16 +42,16 @@ python scripts\train.py --model Hybrid --mode test --test_code 000019
 ```
 
 #### 2. 模型导入错误（已解决）
-**问题**：`cannot import name 'Hybrid' from 'stock_prediction.models'`
+**问题**：`cannot import name 'Hybrid' from 'models'`
 
 **修复**：
 ```python
 # 修改前
-from stock_prediction.models import Hybrid
+from models import Hybrid
 test_model = Hybrid(**model_args)
 
 # 修改后
-from stock_prediction.models import TemporalHybridNet
+from models import TemporalHybridNet
 test_model = TemporalHybridNet(**model_args)
 ```
 

@@ -91,7 +91,7 @@ TemporalHybridNet (Hybrid Aggregator)
 - `docs/research_diffusion_graph.md`：扩散 / 图建模预研路线，Hybrid 2.0 是其中的集成落地。
 - `docs/system_design.md`：已更新 Hybrid 架构说明。
 - `docs/maintenance.md`：记录 Hybrid 2.0 规划状态。
-- 源码入口：`src/stock_prediction/models/temporal_hybrid.py`（`TemporalHybridNet`）、`train.py`、`predict.py`。
+- 源码入口：`src/models/temporal_hybrid.py`（`TemporalHybridNet`）、`train.py`、`predict.py`。
 
 ---
 Hybrid 2.0 的实现为后续多模态实验提供统一入口，仍需结合实际业务需求持续评估分支配置、loss 策略与性能表现。***

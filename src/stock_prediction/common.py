@@ -15,9 +15,9 @@ from pathlib import Path
 from typing import Optional, Tuple
 from torchvision.models import resnet101  # unused placeholder import
 
-from .models.lstm_basic import LSTM
-from .models.transformer_classic import TransformerModel
-from .models.cnn_lstm import CNNLSTM
+from models.lstm_basic import LSTM
+from models.transformer_classic import TransformerModel
+from models.cnn_lstm import CNNLSTM
 
 
 

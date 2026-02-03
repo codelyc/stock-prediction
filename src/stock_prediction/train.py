@@ -21,7 +21,7 @@ if str(src_dir) not in sys.path:
 import torch
 from stock_prediction.trainer import Trainer, EarlyStopping, EarlyStoppingConfig
 
-from stock_prediction.models import (
+from models import (
     LSTM,
     AttentionLSTM,
     BiLSTM,
@@ -348,28 +348,28 @@ def test(dataset, testmodel=None, dataloader_mode=0, norm_symbol=None):
                             model_args = json.load(f)
                         # 使用保存的参数重新创建模型
                         if model_mode == "LSTM":
-                            from stock_prediction.models import LSTM
+                            from models import LSTM
                             test_model = LSTM(**model_args)
                         elif model_mode == "GRU":
-                            from stock_prediction.models import GRU
+                            from models import GRU
                             test_model = GRU(**model_args)
                         elif model_mode == "TRANSFORMER":
-                            from stock_prediction.models import Transformer
+                            from models import Transformer
                             test_model = Transformer(**model_args)
                         elif model_mode == "HYBRID":
-                            from stock_prediction.models import TemporalHybridNet
+                            from models import TemporalHybridNet
                             test_model = TemporalHybridNet(**model_args)
                         elif model_mode == "PTFT_VSSM":
-                            from stock_prediction.models import PTFTVSSMEnsemble
+                            from models import PTFTVSSMEnsemble
                             test_model = PTFTVSSMEnsemble(**model_args)
                         elif model_mode == "DIFFUSION":
-                            from stock_prediction.models import DiffusionLSTM
+                            from models import DiffusionLSTM
                             test_model = DiffusionLSTM(**model_args)
                         elif model_mode == "GRAPH":
-                            from stock_prediction.models import GraphLSTM
+                            from models import GraphLSTM
                             test_model = GraphLSTM(**model_args)
                         elif model_mode == "CNNLSTM":
-                            from stock_prediction.models import CNNLSTM
+                            from models import CNNLSTM
                             test_model = CNNLSTM(**model_args)
                         # 将模型移到正确的设备
                         if args.test_gpu == 0:

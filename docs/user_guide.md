@@ -16,7 +16,7 @@
 | `stock_prediction.config` | `Config` 类及常用路径 | `from stock_prediction.config import config, train_pkl_path` |
 | `stock_prediction.common` | 数据集、可视化、模型保存工具 | 导入前确保 `init.py` 已初始化全局状态 |
 | `stock_prediction.feature_engineering` | 收益率/差分特征、外生变量融合、滑动窗口聚合 | `FeatureEngineer(AppConfig.from_env_and_yaml(...).features)` |
-| `stock_prediction.models` | 模型集合（Hybrid Aggregator、ProbTFT、VSSM、Diffusion、Graph 等） | `from stock_prediction.models import TemporalHybridNet` |
+| `models` | 模型集合（Hybrid Aggregator、ProbTFT、VSSM、Diffusion、Graph 等） | `from models import TemporalHybridNet` |
 | `stock_prediction.getdata` | 行情采集函数 `set_adjust` / `get_stock_list` / `get_stock_data` | 可按需组合 |
 | `stock_prediction.data_preprocess` | 批量预处理接口 `preprocess_data()` | 生成新的序列化队列 |
 | `stock_prediction.target` | 技术指标函数库 | 可直接用于特征工程 |
@@ -39,7 +39,7 @@ un_all_models.bat
 - `--pkl`：是否使用 `train.pkl`（1 表示使用）
 - `--epoch`：训练轮数
 
-建议流程：先用较小 `epoch` 跑通所有模型，确认配置无误；再根据需求调整 `epoch`、`batch_size` 与特征集合开展正式对比；结合业务目标（趋势、价格、波动率等）选择最合适的结构；新增模型时，在 `src/stock_prediction/models/` 实现并分别在 `train.py` 与 `predict.py` 注册即可。
+建议流程：先用较小 `epoch` 跑通所有模型，确认配置无误；再根据需求调整 `epoch`、`batch_size` 与特征集合开展正式对比；结合业务目标（趋势、价格、波动率等）选择最合适的结构；新增模型时，在 `src/models/` 实现并分别在 `train.py` 与 `predict.py` 注册即可。
 
 ## 4. 运维与环境
 ### 4.1 环境说明
